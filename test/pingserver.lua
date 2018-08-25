@@ -1,6 +1,6 @@
 local skynet = require "skynet"
 local queue = require "skynet.queue"
-local snax = require "snax"
+local snax = require "skynet.snax"
 
 local i = 0
 local hello = "hello"
@@ -43,6 +43,7 @@ end
 
 function init( ... )
 	print ("ping server start:", ...)
+	snax.enablecluster()	-- enable cluster call
 	-- init queue
 	lock = queue()
 end

@@ -1,5 +1,5 @@
 local skynet = require "skynet"
-local mysql = require "mysql"
+local mysql = require "skynet.db.mysql"
 
 local function dump(obj)
     local getIndent, quoteStr, wrapKey, wrapVal, dumpObj
@@ -63,28 +63,32 @@ local function test3( db)
         local    res = db:query("select * from cats order by id asc")
         print ( "test3 loop times=" ,i,"\n","query result=",dump( res ) )
         res = db:query("select * from cats order by id asc")
-        print ( "test3 loop times=" ,i,"\n","query result=",dump( res ) )        
+        print ( "test3 loop times=" ,i,"\n","query result=",dump( res ) )
         skynet.sleep(1000)
         i=i+1
     end
 end
 skynet.start(function()
 
-	local db=mysql.connect{	
+	local function on_connect(db)
+		db:query("set charset utf8");
+	end
+	local db=mysql.connect({
 		host="127.0.0.1",
 		port=3306,
 		database="skynet",
 		user="root",
 		password="1",
-		max_packet_size = 1024 * 1024
-	}
+		max_packet_size = 1024 * 1024,
+		on_connect = on_connect
+	})
 	if not db then
 		print("failed to connect")
 	end
 	print("testmysql success to connect to mysql server")
 
 	local res = db:query("drop table if exists cats")
-	res = db:query("create table cats " 
+	res = db:query("create table cats "
 		               .."(id serial primary key, ".. "name varchar(5))")
 	print( dump( res ) )
 
@@ -112,7 +116,7 @@ skynet.start(function()
     while true do
         local    res = db:query("select * from cats order by id asc")
         print ( "test1 loop times=" ,i,"\n","query result=",dump( res ) )
-      
+
         res = db:query("select * from cats order by id asc")
         print ( "test1 loop times=" ,i,"\n","query result=",dump( res ) )
 
